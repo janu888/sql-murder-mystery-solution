@@ -5,35 +5,6 @@ This project walks through a complete crime investigation using SQL — analyzin
 
 The investigation is broken down into 7 steps, each supported with queries, findings, and case notes.
 
-Dive in, detective. Let’s crack this case. 🔍
-
-🔧 Folder Structure
-sql-murder-mystery-solution/
-│
-├── README.md
-│
-├── step1_crime_evidence_overview.sql
-├── step2_ceo_office_access_logs.sql
-├── step3_alibi_verification.sql
-├── step4_call_activity_analysis.sql
-├── step5_evidence_movement_correlation.sql
-├── step6_suspect_analysis_cte.sql
-├── step7_final_case_solved.sql
-│
-├── screenshots/
-│   ├── evidence_overview.png
-│   ├── keycard_logs.png
-│   ├── alibi_records.png
-│   ├── call_activity.png
-│   ├── evidence_correlation.png
-│   ├── suspect_cte_analysis.png
-│   ├── final_verdict.png
-│
-└── SQL_Murder_Mystery.sql   ← (dataset file)
-
-
-(You can add your screenshots later inside the screenshots/ folder.)
-
 🕵️ 1. Introduction
 
 This project simulates a real-world data investigation where the CEO of TechNova Inc. is found dead in their office.
@@ -236,7 +207,32 @@ Confirm the killer using all combined evidence.
 
 📝 Query
 
-(Already in step7_final_case_solved.sql — final verdict query)
+WITH crime_window AS (
+    SELECT 
+        MIN(found_time) AS crime_start,
+        MAX(found_time) AS crime_end
+    FROM evidence
+    WHERE room = 'CEO Office'
+),
+
+ordered_people AS (
+    SELECT 
+        k.employee_id,
+        e.name,
+        k.exit_time
+    FROM keycard_logs k
+    JOIN employees e ON k.employee_id = e.employee_id
+    JOIN crime_window cw
+    WHERE k.room = 'CEO Office'
+      AND k.exit_time <= cw.crime_end
+    ORDER BY k.exit_time DESC
+)
+
+SELECT name AS killer
+FROM ordered_people
+LIMIT 1;
+
+
 
 🔍 Final Findings
 
